@@ -39,11 +39,13 @@ am_leader = parsed_args["amleader"]
 if !am_leader
   println("Starting Listener")
   begin
-    server = listen(my_config.port)
+    socket = UDPSocket()
+    bind(socket, ip"127.0.0.1", my_config.port)
     while true
-      sock = accept(server)
+      msg = recv(socket)
       println("RECEIVED")
-      readval = ProtoBuf.readproto(sock, Raft.RaftRPC.RPCRequest())
+      println(String(msg))
+      readval = ProtoBuf.readproto(IOBuffer(msg), Raft.RaftRPC.RPCRequest())
       println("\treadval ", readval)
 
       if !ProtoBuf.has_field(readval, :_type) || !ProtoBuf.has_field(readval, :request)
@@ -59,14 +61,16 @@ if !am_leader
         aer = ProtoBuf.readproto(IOBuffer(ProtoBuf.get_field(readval, :request)), Raft.RaftRPC.AppendEntriesRequest())
         println("\tAER ", aer)
 
-        reply = Rake.RakeRPC.RPCReply()
-        ProtoBuf.set_field!(reply, :_type, 0)
+        reply = Raft.RaftRPC.RPCReply()
+        ProtoBuf.set_field!(reply, :_type, Int32(0))
         ib = IOBuffer()
-        ProtoBuf.writeproto(ib, Raft.RaftRPC.AppendEntriesRequest(Uint64(1),true))
-        ProtoBuf.set_field!(reply, :reply, ib)
+        ProtoBuf.writeproto(ib, Raft.RaftRPC.AppendEntriesReply(term=UInt64(1),success=true))
+        ProtoBuf.set_field!(reply, :reply, takebuf_array(ib))
 
         println("\tSending AER reply")
-        ProtoBuf.writeproto(sock, reply)
+        outb = IOBuffer()
+        ProtoBuf.writeproto(outb, reply)
+        send(socket, ip"127.0.0.1", my_config.servers[2].port, takebuf_array(outb))
 
       elseif request_type == :REQUESTVOTE
         # vote for them
@@ -84,8 +88,8 @@ if !am_leader
   end
   println("Done Listening")
 else
-
-  out = connect(my_config.servers[2].port)
+  socket = UDPSocket()
+  bind(socket, ip"127.0.0.1", my_config.port)
 
   aer = Raft.RaftRPC.AppendEntriesRequest(
       term = 1,
@@ -100,10 +104,16 @@ else
   ProtoBuf.writeproto(ib, aer)
   ProtoBuf.set_field!(request, :request, takebuf_array(ib))
 
-  ProtoBuf.writeproto(out, request)
+  outb = IOBuffer()
+  ProtoBuf.writeproto(outb, request)
+
+  send(socket, ip"127.0.0.1", my_config.servers[2].port, takebuf_array(outb))
   println("SENT")
 
-  readval = ProtoBuf.readproto(out, Raft.RaftRPC.RPCReply())
-  println(ProtoBuf.enumstr("ExchangeType", get_field(readval, :_type)))
+  msg = recv(socket)
+  println("RECEIVED")
+  println(msg)
+  readval = ProtoBuf.readproto(IOBuffer(msg), Raft.RaftRPC.RPCReply())
+  println(ProtoBuf.enumstr(Raft.RaftRPC.ExchangeType, ProtoBuf.get_field(readval, :_type)))
   println("DONE")
 end
