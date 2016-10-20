@@ -1,6 +1,21 @@
 syntax = "proto3";
 package RaftRPC;
 
+enum ExchangeType {
+  APPENDENTRIES = 0;
+  REQUESTVOTE = 1;
+  INSTALLSNAPSHOT = 2;
+}
+
+message RPCRequest {
+  ExchangeType type = 1;
+  bytes request = 2;
+}
+message RPCReply {
+  ExchangeType type = 1;
+  bytes reply = 2;
+}
+
 message LogEntry {
   uint64 index = 1;
   uint64 term = 2;

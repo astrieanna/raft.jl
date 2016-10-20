@@ -1,4 +1,4 @@
-include("./jlproto/RaftRPC.jl")
+include("../jlproto/RaftRPC.jl")
 
 ###
 # Types for state stored on servers
@@ -27,3 +27,14 @@ type LeaderVolatileState
   matchIndex::Dict{Server, LogIndex}
 end
 
+# Configuration
+type Address
+  ipaddress::String
+  port::UInt
+end
+
+type ServerConfig
+  id::Server # my id
+  port::UInt # port to listen on
+  servers::Dict{Server, Address}
+end

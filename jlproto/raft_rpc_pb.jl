@@ -4,6 +4,32 @@ using ProtoBuf
 import ProtoBuf.meta
 import Base: hash, isequal, ==
 
+type __enum_ExchangeType <: ProtoEnum
+    APPENDENTRIES::Int32
+    REQUESTVOTE::Int32
+    INSTALLSNAPSHOT::Int32
+    __enum_ExchangeType() = new(0,1,2)
+end #type __enum_ExchangeType
+const ExchangeType = __enum_ExchangeType()
+
+type RPCRequest
+    _type::Int32
+    request::Array{UInt8,1}
+    RPCRequest(; kwargs...) = (o=new(); fillunset(o); isempty(kwargs) || ProtoBuf._protobuild(o, kwargs); o)
+end #type RPCRequest
+hash(v::RPCRequest) = ProtoBuf.protohash(v)
+isequal(v1::RPCRequest, v2::RPCRequest) = ProtoBuf.protoisequal(v1, v2)
+==(v1::RPCRequest, v2::RPCRequest) = ProtoBuf.protoeq(v1, v2)
+
+type RPCReply
+    _type::Int32
+    reply::Array{UInt8,1}
+    RPCReply(; kwargs...) = (o=new(); fillunset(o); isempty(kwargs) || ProtoBuf._protobuild(o, kwargs); o)
+end #type RPCReply
+hash(v::RPCReply) = ProtoBuf.protohash(v)
+isequal(v1::RPCReply, v2::RPCReply) = ProtoBuf.protoisequal(v1, v2)
+==(v1::RPCReply, v2::RPCReply) = ProtoBuf.protoeq(v1, v2)
+
 type LogEntry
     index::UInt64
     term::UInt64
@@ -79,4 +105,4 @@ hash(v::InstallSnapshotReply) = ProtoBuf.protohash(v)
 isequal(v1::InstallSnapshotReply, v2::InstallSnapshotReply) = ProtoBuf.protoisequal(v1, v2)
 ==(v1::InstallSnapshotReply, v2::InstallSnapshotReply) = ProtoBuf.protoeq(v1, v2)
 
-export LogEntry, AppendEntriesRequest, AppendEntriesReply, RequestVoteRequest, RequestVoteReply, InstallSnapshotRequest, InstallSnapshotReply
+export ExchangeType, RPCRequest, RPCReply, LogEntry, AppendEntriesRequest, AppendEntriesReply, RequestVoteRequest, RequestVoteReply, InstallSnapshotRequest, InstallSnapshotReply
