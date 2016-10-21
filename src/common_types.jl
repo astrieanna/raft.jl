@@ -29,7 +29,7 @@ end
 
 # Configuration
 type Address
-  ipaddress::String
+  ipaddress::IPv4
   port::UInt
 end
 

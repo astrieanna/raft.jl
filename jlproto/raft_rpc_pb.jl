@@ -14,6 +14,7 @@ const ExchangeType = __enum_ExchangeType()
 
 type RPCRequest
     _type::Int32
+    server_id::UInt64
     request::Array{UInt8,1}
     RPCRequest(; kwargs...) = (o=new(); fillunset(o); isempty(kwargs) || ProtoBuf._protobuild(o, kwargs); o)
 end #type RPCRequest
@@ -23,6 +24,7 @@ isequal(v1::RPCRequest, v2::RPCRequest) = ProtoBuf.protoisequal(v1, v2)
 
 type RPCReply
     _type::Int32
+    server_id::UInt64
     reply::Array{UInt8,1}
     RPCReply(; kwargs...) = (o=new(); fillunset(o); isempty(kwargs) || ProtoBuf._protobuild(o, kwargs); o)
 end #type RPCReply

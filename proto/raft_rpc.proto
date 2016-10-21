@@ -9,11 +9,13 @@ enum ExchangeType {
 
 message RPCRequest {
   ExchangeType type = 1;
-  bytes request = 2;
+  uint64 server_id = 2;
+  bytes request = 3;
 }
 message RPCReply {
   ExchangeType type = 1;
-  bytes reply = 2;
+  uint64 server_id = 2;
+  bytes reply = 3;
 }
 
 message LogEntry {
